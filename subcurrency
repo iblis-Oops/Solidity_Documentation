@@ -1,0 +1,44 @@
+//SPDX-License-Identifier:MIT;
+//Subcurrency Example...
+pragma solidity >= 0.6.0 < 0.9.0;
+
+contract Coin{
+    // The word address is used to store hash of the contracts which does not allow arithmetic operations on it...
+    // public keyword make the state variable minter accesible outside of the contract...
+    address public minter;
+
+    // This line create public state variable of mapping data type..
+    mapping(address => uint) public balances;
+
+    //Events allows clients to react to specific contract change you declare... 
+    event Sent(address from , address to , uint amount);
+
+
+    constructor(){
+        minter = msg.sender;
+    }
+
+    function mint(address reciever , uint amount) public{
+        require(msg.sender == minter);
+        balances[reciever]+=amount;
+    }
+
+    error InsufficientBalance(uint requested,uint available);
+
+
+    function send(address reciever , uint amount) public{
+        if(amount>balances[msg.sender])
+            revert InsufficientBalance({
+                requested:amount,
+                available:balances[msg.sender]
+            });
+
+        balances[msg.sender]-=amount;
+        balances[reciever]+=amount;
+
+
+        emit Sent(msg.sender , reciever , amount);
+    }
+
+
+}
